@@ -31,6 +31,8 @@ export default {
     tooltipContainer: 'c3-tooltip-container',
     tooltip: 'c3-tooltip',
     tooltipName: 'c3-tooltip-name',
+    hintContainer: 'c3-hint-container',
+    hint: 'c3-hint',
     shape: 'c3-shape',
     shapes: 'c3-shapes',
     line: 'c3-line',

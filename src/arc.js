@@ -392,6 +392,7 @@ ChartInternal.prototype.redrawArc = function (duration, durationForExit, withTra
                 arcData = $$.convertToArcData(updated),
                 selectedData = [arcData];
                 $$.showTooltip(selectedData, this);
+                $$.showHint(selectedData, this);
             }
         } : null)
         .on('mouseout', config.interaction_enabled ? function (d) {
@@ -407,6 +408,7 @@ ChartInternal.prototype.redrawArc = function (duration, durationForExit, withTra
                 $$.api.revert();
                 $$.revertLegend();
                 $$.hideTooltip();
+                $$.hideHint();
                 $$.config.data_onmouseout(arcData, this);
             }
         } : null)

@@ -228,6 +228,13 @@ ChartInternal.prototype.getDefaultConfig = function () {
         tooltip_init_position: {top: '0px', left: '50px'},
         tooltip_onshow: function () {},
         tooltip_onhide: function () {},
+        // hint
+        hint_show: false,
+        hint_text: undefined,
+        hint_position: undefined,
+        hint_contents: function hint_contents(d, defaultTitleFormat, defaultValueFormat, color) {
+            return this.getHintContent ? this.getHintContent(d, defaultTitleFormat, defaultValueFormat, color) : '';
+        },
         // title
         title_text: undefined,
         title_padding: {
