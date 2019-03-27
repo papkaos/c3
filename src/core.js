@@ -266,6 +266,9 @@ ChartInternal.prototype.initWithData = function(data) {
     if ($$.initTooltip) {
         $$.initTooltip();
     }
+    if ($$.initHint) {
+        $$.initHint();
+    }
     if ($$.initLegend) {
         $$.initLegend();
     }

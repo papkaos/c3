@@ -35,6 +35,7 @@ ChartInternal.prototype.redrawEventRect = function () {
         $$.svg.select('.' + CLASS.eventRect).style('cursor', null);
         $$.hideXGridFocus();
         $$.hideTooltip();
+        $$.hideHint();
         $$.unexpandCircles();
         $$.unexpandBars();
     }
@@ -84,6 +85,7 @@ ChartInternal.prototype.redrawEventRect = function () {
                 return $$.addName(d);
             });
             $$.showTooltip(selectedData, this);
+            $$.showHint(selectedData, this);
 
             // expand points
             if (config.point_focus_expand_enabled) {

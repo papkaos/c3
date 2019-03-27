@@ -35,6 +35,7 @@ import './domain';
 import './drag';
 import './format';
 import './grid';
+import './hint';
 import './interaction';
 import './legend';
 import './region';

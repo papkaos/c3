@@ -585,6 +585,8 @@
     tooltipContainer: 'c3-tooltip-container',
     tooltip: 'c3-tooltip',
     tooltipName: 'c3-tooltip-name',
+    hintContainer: 'c3-hint-container',
+    hint: 'c3-hint',
     shape: 'c3-shape',
     shapes: 'c3-shapes',
     line: 'c3-line',
@@ -1394,6 +1396,10 @@
 
     if ($$.initTooltip) {
       $$.initTooltip();
+    }
+
+    if ($$.initHint) {
+      $$.initHint();
     }
 
     if ($$.initLegend) {
@@ -4911,14 +4917,12 @@
   Chart.prototype.selected = function (targetId) {
     var $$ = this.internal,
         d3 = $$.d3;
-    return d3.merge($$.main.selectAll('.' + CLASS.shapes + $$.getTargetSelectorSuffix(targetId)).selectAll('.' + CLASS.shape).filter(function () {
+    return $$.main.selectAll('.' + CLASS.shapes + $$.getTargetSelectorSuffix(targetId)).selectAll('.' + CLASS.shape).filter(function () {
       return d3.select(this).classed(CLASS.SELECTED);
-    }).map(function (d) {
-      return d.map(function (d) {
-        var data = d.__data__;
-        return data.data ? data.data : data;
-      });
-    }));
+    }).nodes().map(function (d) {
+      var data = d.__data__;
+      return data.data ? data.data : data;
+    });
   };
 
   Chart.prototype.select = function (ids, indices, resetOther) {
@@ -5651,6 +5655,7 @@
       if (updated) {
         arcData = $$.convertToArcData(updated), selectedData = [arcData];
         $$.showTooltip(selectedData, this);
+        $$.showHint(selectedData, this);
       }
     } : null).on('mouseout', config.interaction_enabled ? function (d) {
       var updated, arcData;
@@ -5669,6 +5674,7 @@
         $$.api.revert();
         $$.revertLegend();
         $$.hideTooltip();
+        $$.hideHint();
         $$.config.data_onmouseout(arcData, this);
       }
     } : null).on('click', config.interaction_enabled ? function (d, i) {
@@ -6310,6 +6316,13 @@
       },
       tooltip_onshow: function tooltip_onshow() {},
       tooltip_onhide: function tooltip_onhide() {},
+      // hint
+      hint_show: false,
+      hint_text: undefined,
+      hint_position: undefined,
+      hint_contents: function hint_contents(d, defaultTitleFormat, defaultValueFormat, color) {
+        return this.getHintContent ? this.getHintContent(d, defaultTitleFormat, defaultValueFormat, color) : '';
+      },
       // title
       title_text: undefined,
       title_padding: {
@@ -8018,6 +8031,91 @@
     }
   };
 
+  ChartInternal.prototype.initHint = function () {
+    var $$ = this;
+    $$.hint = $$.selectChart.style("position", "relative").append("div").attr('class', CLASS.hintContainer).style("position", "absolute").style("pointer-events", "none").style("display", "none");
+  };
+
+  ChartInternal.prototype.getHintContent = function () {
+    var $$ = this,
+        config = $$.config,
+        hintText = config.hint_text || 'Click to see details';
+    return "<span class='" + CLASS.hint + "'>" + hintText + "</span>";
+  };
+
+  ChartInternal.prototype.hintPosition = function (dataToShow, tWidth, tHeight, element) {
+    var $$ = this,
+        config = $$.config,
+        d3 = $$.d3;
+    var svgLeft, hintLeft, hintRight, hintTop, chartRight;
+    var forArc = $$.hasArcType(),
+        mouse = d3.mouse(element); // Determin hint position
+
+    if (forArc) {
+      hintLeft = ($$.width - ($$.isLegendRight ? $$.getLegendWidth() : 0)) / 2 + mouse[0];
+      hintTop = ($$.hasType('gauge') ? $$.height : $$.height / 2) + mouse[1] + 20;
+    } else {
+      svgLeft = $$.getSvgLeft(true);
+
+      if (config.axis_rotated) {
+        hintLeft = svgLeft + mouse[0] + 100;
+        hintRight = hintLeft + tWidth;
+        chartRight = $$.currentWidth - $$.getCurrentPaddingRight();
+        hintTop = $$.x(dataToShow[0].x) + 20;
+      } else {
+        hintLeft = svgLeft + $$.getCurrentPaddingLeft(true) + $$.x(dataToShow[0].x) + 20;
+        hintRight = hintLeft + tWidth;
+        chartRight = svgLeft + $$.currentWidth - $$.getCurrentPaddingRight();
+        hintTop = mouse[1] + 15;
+      }
+
+      if (hintRight > chartRight) {
+        // 20 is needed for Firefox to keep hint width
+        hintLeft -= hintRight - chartRight + 20;
+      }
+
+      if (hintTop + tHeight > $$.currentHeight) {
+        hintTop -= tHeight + 30;
+      }
+    }
+
+    if (hintTop < 0) {
+      hintTop = 0;
+    }
+
+    return {
+      top: hintTop,
+      left: hintLeft
+    };
+  };
+
+  ChartInternal.prototype.showHint = function (selectedData, element) {
+    var $$ = this,
+        config = $$.config;
+    var tWidth, tHeight, position;
+    var forArc = $$.hasArcType(),
+        dataToShow = selectedData.filter(function (d) {
+      return d && isValue(d.value);
+    }),
+        positionFunction = config.hint_position || ChartInternal.prototype.hintPosition;
+
+    if (dataToShow.length === 0 || !config.hint_show) {
+      return;
+    }
+
+    $$.hint.html(config.hint_contents.call($$, selectedData, $$.axis.getXAxisTickFormat(), $$.getYFormat(forArc), $$.color)).style("display", "block"); // Get hint dimensions
+
+    tWidth = $$.hint.property('offsetWidth');
+    tHeight = $$.hint.property('offsetHeight');
+    position = positionFunction.call(this, dataToShow, tWidth, tHeight, element); // Set hint
+
+    $$.hint.style("top", position.top + "px").style("left", position.left + 'px');
+  };
+
+  ChartInternal.prototype.hideHint = function () {
+    this.hint.style("display", "none");
+  };
+
   ChartInternal.prototype.initEventRect = function () {
     var $$ = this,
         config = $$.config;
@@ -8052,6 +8150,7 @@
       $$.svg.select('.' + CLASS.eventRect).style('cursor', null);
       $$.hideXGridFocus();
       $$.hideTooltip();
+      $$.hideHint();
       $$.unexpandCircles();
       $$.unexpandBars();
     } // rects for mouseover
@@ -8105,7 +8204,8 @@
       selectedData = sameXData.map(function (d) {
         return $$.addName(d);
       });
-      $$.showTooltip(selectedData, this); // expand points
+      $$.showTooltip(selectedData, this);
+      $$.showHint(selectedData, this); // expand points
 
       if (config.point_focus_expand_enabled) {
         $$.unexpandCircles();
