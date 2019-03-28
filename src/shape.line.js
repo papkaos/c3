@@ -311,7 +311,7 @@ ChartInternal.prototype.updateCircle = function (cx, cy) {
         .attr("cx", cx)
         .attr("cy", cy)
         .attr("r", $$.pointR.bind($$))
-        .style("fill", $$.color);
+        .styles(this.getCircleStyles());
     $$.mainCircle = mainCircleEnter.merge(mainCircle)
         .style("opacity", $$.initialOpacityForCircle.bind($$));
     mainCircle.exit()
@@ -323,13 +323,22 @@ ChartInternal.prototype.redrawCircle = function (cx, cy, withTransition, transit
     return [
         (withTransition ? $$.mainCircle.transition(transition) : $$.mainCircle)
             .style('opacity', this.opacityForCircle.bind($$))
-            .style("fill", $$.color)
+            .styles(this.getCircleStyles())
             .attr("cx", cx)
             .attr("cy", cy),
         (withTransition ? selectedCircles.transition(transition) : selectedCircles)
             .attr("cx", cx)
             .attr("cy", cy)
     ];
+};
+ChartInternal.prototype.getCircleStyles = function () {
+    var $$ = this,
+      config = $$.config;
+    if (config.point_stroke_show) {
+        return { 'fill': '#FFFFFF', 'stroke': $$.color, 'stroke-width': config.point_stroke_width };
+    } else {
+        return { 'fill': $$.color };
+    }
 };
 ChartInternal.prototype.circleX = function (d) {
     return d.x || d.x === 0 ? this.x(d.x) : null;

@@ -166,6 +166,8 @@ ChartInternal.prototype.getDefaultConfig = function () {
         point_focus_expand_enabled: true,
         point_focus_expand_r: undefined,
         point_select_r: undefined,
+        point_stroke_show: false,
+        point_stroke_width: 2,
         // line
         line_connectNull: false,
         line_step_type: 'step',

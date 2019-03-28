@@ -6251,6 +6251,8 @@
       point_focus_expand_enabled: true,
       point_focus_expand_r: undefined,
       point_select_r: undefined,
+      point_stroke_show: false,
+      point_stroke_width: 2,
       // line
       line_connectNull: false,
       line_step_type: 'step',
@@ -9608,7 +9610,7 @@
   ChartInternal.prototype.updateCircle = function (cx, cy) {
     var $$ = this;
     var mainCircle = $$.main.selectAll('.' + CLASS.circles).selectAll('.' + CLASS.circle).data($$.lineOrScatterData.bind($$));
-    var mainCircleEnter = mainCircle.enter().append("circle").attr("class", $$.classCircle.bind($$)).attr("cx", cx).attr("cy", cy).attr("r", $$.pointR.bind($$)).style("fill", $$.color);
+    var mainCircleEnter = mainCircle.enter().append("circle").attr("class", $$.classCircle.bind($$)).attr("cx", cx).attr("cy", cy).attr("r", $$.pointR.bind($$)).styles(this.getCircleStyles());
     $$.mainCircle = mainCircleEnter.merge(mainCircle).style("opacity", $$.initialOpacityForCircle.bind($$));
     mainCircle.exit().style("opacity", 0);
   };
@@ -9616,7 +9618,24 @@
   ChartInternal.prototype.redrawCircle = function (cx, cy, withTransition, transition) {
     var $$ = this,
         selectedCircles = $$.main.selectAll('.' + CLASS.selectedCircle);
-    return [(withTransition ? $$.mainCircle.transition(transition) : $$.mainCircle).style('opacity', this.opacityForCircle.bind($$)).style("fill", $$.color).attr("cx", cx).attr("cy", cy), (withTransition ? selectedCircles.transition(transition) : selectedCircles).attr("cx", cx).attr("cy", cy)];
+    return [(withTransition ? $$.mainCircle.transition(transition) : $$.mainCircle).style('opacity', this.opacityForCircle.bind($$)).styles(this.getCircleStyles()).attr("cx", cx).attr("cy", cy), (withTransition ? selectedCircles.transition(transition) : selectedCircles).attr("cx", cx).attr("cy", cy)];
+  };
+
+  ChartInternal.prototype.getCircleStyles = function () {
+    var $$ = this,
+        config = $$.config;
+
+    if (config.point_stroke_show) {
+      return {
+        'fill': '#FFFFFF',
+        'stroke': $$.color,
+        'stroke-width': config.point_stroke_width
+      };
+    } else {
+      return {
+        'fill': $$.color
+      };
+    }
   };
 
   ChartInternal.prototype.circleX = function (d) {
