@@ -1,4 +1,4 @@
-/* @license C3.js v0.6.13 | (c) C3 Team and other contributors | http://c3js.org/ */
+/* @license C3.js v0.6.24 | (c) C3 Team and other contributors | http://c3js.org/ */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -8255,7 +8255,7 @@
           $$.main.selectAll('.' + CLASS.shapes + $$.getTargetSelectorSuffix(d.id)).selectAll('.' + CLASS.shape + '-' + d.index).each(function () {
             if (config.data_selection_grouped || $$.isWithinShape(this, d)) {
               $$.toggleShape(this, d, d.index);
-              config.data_onclick.call($$.api, d, this);
+              config.data_onclick.call($$.api, d, this, mouse);
             }
           });
         });
