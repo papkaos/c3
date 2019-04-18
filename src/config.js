@@ -68,6 +68,10 @@ ChartInternal.prototype.getDefaultConfig = function () {
         data_columns: undefined,
         data_mimeType: undefined,
         data_keys: undefined,
+        // custom onclick
+        data_custom_onclick_apply: false,
+        data_custom_onclick_delta: 0.1,
+        data_custom_onclick_exclude: '',
         // configuration for no plot-able data supplied.
         data_empty_label_text: "",
         // subchart

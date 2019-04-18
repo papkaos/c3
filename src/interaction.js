@@ -110,6 +110,9 @@ ChartInternal.prototype.redrawEventRect = function () {
         } : null)
         .on('click', config.interaction_enabled ? function () {
             var targetsToShow, mouse, closest, sameXData;
+            var isIntersect = false;
+            var consideredPoints = [];
+
             if ($$.hasArcType(targetsToShow)) { return; }
 
             targetsToShow = $$.filterTargetsToShow($$.data.targets);
@@ -123,11 +126,38 @@ ChartInternal.prototype.redrawEventRect = function () {
                 } else {
                     sameXData = $$.filterByX(targetsToShow, closest.x);
                 }
+
+                // ---
+                if (config.data_custom_onclick_apply && sameXData[0].id !== config.data_custom_onclick_exclude) {
+                    var sameXDataAll = $$.filterByX(targetsToShow, closest.x);
+                    var delta = ($$.getYDomainMax(targetsToShow) - $$.getYDomainMin(targetsToShow)) * config.data_custom_onclick_delta;
+                    consideredPoints = sameXDataAll.filter(function(xData) {
+                        return xData.id !== config.data_custom_onclick_exclude;
+                    }).sort(function(a, b) {
+                        return b.value - a.value;
+                    });
+
+                    isIntersect = Math.abs(consideredPoints[0].value - consideredPoints[1].value) < delta;
+                }
+                // ---
+
                 sameXData.forEach(function (d) {
                     $$.main.selectAll('.' + CLASS.shapes + $$.getTargetSelectorSuffix(d.id)).selectAll('.' + CLASS.shape + '-' + d.index).each(function () {
                         if (config.data_selection_grouped || $$.isWithinShape(this, d)) {
                             $$.toggleShape(this, d, d.index);
-                            config.data_onclick.call($$.api, d, this, mouse);
+                            if (config.data_custom_onclick_apply) {
+                                var dataPoints = isIntersect ? consideredPoints : [d];
+                                var consideredElements = [];
+                                consideredPoints.forEach(function(d) {
+                                    $$.main.selectAll('.' + CLASS.shapes + $$.getTargetSelectorSuffix(d.id)).selectAll('.' + CLASS.shape + '-' + d.index).each(function() {
+                                        consideredElements.push(this);
+                                    });
+                                });
+                                var elements = isIntersect ? consideredElements : [this];
+                                config.data_onclick.call($$.api, dataPoints, elements, mouse);
+                            } else {
+                                config.data_onclick.call($$.api, d, this);
+                            }
                         }
                     });
                 });
