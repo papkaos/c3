@@ -1,4 +1,4 @@
-/* @license C3.js v0.6.25 | (c) C3 Team and other contributors | http://c3js.org/ */
+/* @license C3.js v0.6.26 | (c) C3 Team and other contributors | http://c3js.org/ */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -8266,7 +8266,10 @@
           }).sort(function (a, b) {
             return b.value - a.value;
           });
-          isIntersect = Math.abs(consideredPoints[0].value - consideredPoints[1].value) < delta;
+
+          if (consideredPoints.length > 1) {
+            isIntersect = Math.abs(consideredPoints[0].value - consideredPoints[1].value) < delta;
+          }
         } // ---
 
 
