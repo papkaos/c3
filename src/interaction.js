@@ -137,7 +137,9 @@ ChartInternal.prototype.redrawEventRect = function () {
                         return b.value - a.value;
                     });
 
-                    isIntersect = Math.abs(consideredPoints[0].value - consideredPoints[1].value) < delta;
+                    if (consideredPoints.length > 1) {
+                        isIntersect = Math.abs(consideredPoints[0].value - consideredPoints[1].value) < delta;
+                    }
                 }
                 // ---
 
